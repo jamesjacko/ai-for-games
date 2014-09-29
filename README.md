@@ -1,6 +1,3 @@
-ai-for-games
-============
-
 The Island
 ====
 
