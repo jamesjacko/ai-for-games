@@ -11,6 +11,11 @@ You are a wrongly convicted felon on a prison colony, there are three possible d
 
 ##Technologies
 
+###http-server
+Used to test the game on localhost
+
+Useage, navigate to ```http-server/public``` and run command ```http-server```
+
 ###Phaser.js
 
 ###HTML5
