@@ -23,6 +23,8 @@
 
         }
 
+
+        var followers = Array();
         var map;
         var layer;
 
@@ -31,8 +33,6 @@
         var marker;
 
         function create() {
-
-
 
             game.physics.startSystem(Phaser.Physics.ARCADE);
 
@@ -47,11 +47,17 @@
             marker = game.add.graphics();
             marker.lineStyle(2, 0x00bff3, 1);
             marker.drawRect(0, 0, 32 * 6, 32 * 6);
-
             sprite = game.add.sprite(450, 80, 'car');
+
+            for(i = 0; i < 100; i++){
+                followers[i] = game.add.sprite(Math.floor(Math.random() * 1000), Math.floor(Math.random() * 1000), 'car');
+                game.physics.enable(followers[i]);
+            }
+            
             sprite.anchor.setTo(0.5, 0.5);
 
             game.physics.enable(sprite);
+            
 
             game.camera.follow(sprite);
 
@@ -89,6 +95,21 @@
             {
                 sprite.body.velocity.copyFrom(game.physics.arcade.velocityFromAngle(sprite.angle, 300));
             }
+
+
+            for(i = 0; i < 100; i++){
+                deltaY = sprite.position.y - followers[i].position.y;
+                deltaX = sprite.position.x - followers[i].position.x;
+
+                angle = Math.atan2(deltaY, deltaX);
+
+                followers[i].rotation = angle;
+                followers[i].body.velocity.x = deltaX;
+                followers[i].body.velocity.y = deltaY;
+            }
+
+            
+           
 
         }
 
