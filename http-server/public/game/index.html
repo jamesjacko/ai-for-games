@@ -25,6 +25,7 @@
 
 
         var followers = Array();
+        var followerAmnt = 1;
         var map;
         var layer;
 
@@ -49,7 +50,7 @@
             marker.drawRect(0, 0, 32 * 6, 32 * 6);
             sprite = game.add.sprite(450, 80, 'car');
 
-            for(i = 0; i < 100; i++){
+            for(i = 0; i <  followerAmnt; i++){
                 followers[i] = game.add.sprite(Math.floor(Math.random() * 1000), Math.floor(Math.random() * 1000), 'car');
                 game.physics.enable(followers[i]);
             }
@@ -97,7 +98,7 @@
             }
 
 
-            for(i = 0; i < 100; i++){
+            for(i = 0; i <  followerAmnt; i++){
                 deltaY = sprite.position.y - followers[i].position.y;
                 deltaX = sprite.position.x - followers[i].position.x;
 
@@ -106,6 +107,7 @@
                 followers[i].rotation = angle;
                 followers[i].body.velocity.x = deltaX;
                 followers[i].body.velocity.y = deltaY;
+            
             }
 
             

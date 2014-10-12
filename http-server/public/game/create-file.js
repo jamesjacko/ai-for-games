@@ -63,31 +63,37 @@ function createJSON(worldWidth, worldHeight){
 
     for(i = 0; i < world.width * world.height; i++){
         if(world.layers[0].data[i] == 1){
-            ask({prop:2, func:sea, params:i});
+            ask({prob:1, func:sea, params:i});
         }
     }
 
+    /*
+        Takes an index in the world and asks the overlord to turn it to sea based
+        on a probability.
+
+        x is the current position in the world
+        a b c
+        d x e
+        f g h
+    */
     function sea(i){
-        console.log("I'm not working");
-        if(world.layers[0].data[i - 1] == 3){
-            world.layers[0].data[i - 1] = ask({prob:2, func:makeSea, params:null});
-        }
-        if(world.layers[0].data[i + 1] == 3){
-            world.layers[0].data[i + 1] = ask({prob:2, func:makeSea, params:null});
-        }
-        for(j = -1; j < 2; j++){
-            if(world.layers[0].data[i - world.width + j] == 3){
-                world.layers[0].data[i - world.width + j] = ask({prob:2, func:makeSea, params:null});
-            }
-            if( world.layers[0].data[i + world.width + j] == 3){
-                world.layers[0].data[i + world.width + j] = ask({prob:2, func:makeSea, params:null});
-            }
-        }
         
+        var probability = 4;
+        // immediate left (d)
+        ask({prob:probability, func:makeSea, params:{point: i - 1}});
+        // immediate right (e)
+        ask({prob:probability, func:makeSea, params:{point: i + 1}});
+        for(j = -1; j < 2; j++){
+            // top row (a,b,c)
+            ask({prob:probability, func:makeSea, params:{point: i - world.width + j}});
+            // bottom row (a,b,c) 
+            ask({prob:probability, func:makeSea, params:{point: i + world.width + j}});
+        }
     }
 
-    function makeSea(){
-        return 1;
+    // Turns the required point in the world to sea.
+    function makeSea(obj){
+        world.layers[0].data[obj.point] = 1;
     }
 
     var json = JSON.stringify(world);
