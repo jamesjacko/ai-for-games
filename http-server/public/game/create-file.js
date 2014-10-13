@@ -63,7 +63,7 @@ function createJSON(worldWidth, worldHeight){
 
     for(i = 0; i < world.width * world.height; i++){
         if(world.layers[0].data[i] == 1){
-            ask({prob:1, func:sea, params:i});
+           ask({prob:1, func:sea, params:i});
         }
     }
 
@@ -97,7 +97,7 @@ function createJSON(worldWidth, worldHeight){
     }
 
     var json = JSON.stringify(world);
-    console.log(world);
+
     var blob = new Blob([json], {type: "application/json"});
     var url  = URL.createObjectURL(blob);
 
