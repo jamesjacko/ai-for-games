@@ -6,6 +6,7 @@
         <script src="phaser.min.js"></script>
         <script src="script.js"></script>
         <script src="create-file.js"></script>
+        <script src="Followers.js"></script>
     </head>
     <body>
 
@@ -14,6 +15,7 @@
     window.onload = function() {
         var width = 100;
         var height = 100;
+        var counter = 0;
         var game = new Phaser.Game(800, 600, Phaser.CANVAS, 'game', { preload: preload, create: create, update: update, render: render });
 
         function preload() {
@@ -24,8 +26,8 @@
         }
 
 
-        var followers = Array();
-        var followerAmnt = 1;
+        var followerGroup;
+        var FOLLOWER_AMNT = 1;
         var map;
         var layer;
 
@@ -44,13 +46,12 @@
 
             layer.resizeWorld();
 
-            
             sprite = game.add.sprite(450, 80, 'car');
 
-            for(i = 0; i <  followerAmnt; i++){
-                followers[i] = game.add.sprite(Math.floor(Math.random() * 1000), Math.floor(Math.random() * 1000), 'car');
-                game.physics.enable(followers[i]);
-            }
+            followerGroup = new Followers(game, FOLLOWER_AMNT, 'car', sprite);
+            
+
+           
             
             sprite.anchor.setTo(0.5, 0.5);
 
@@ -61,13 +62,7 @@
 
             cursors = game.input.keyboard.createCursorKeys();
 
-            game.input.onDown.add(randomiseTiles, this);
-
-        }
-
-        function randomiseTiles() {
-
-            map.random(layer.getTileX(sprite.x), layer.getTileY(sprite.y), 6, 6);
+            
 
         }
 
@@ -91,21 +86,8 @@
                 sprite.body.velocity.copyFrom(game.physics.arcade.velocityFromAngle(sprite.angle, 300));
             }
 
-
-            for(i = 0; i <  followerAmnt; i++){
-                deltaY = sprite.position.y - followers[i].position.y;
-                deltaX = sprite.position.x - followers[i].position.x;
-
-                angle = Math.atan2(deltaY, deltaX);
-
-                followers[i].rotation = angle;
-                followers[i].body.velocity.x = deltaX;
-                followers[i].body.velocity.y = deltaY;
             
-            }
-
-            
-           
+           counter++;
 
         }
 
