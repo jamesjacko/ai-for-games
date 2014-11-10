@@ -22,12 +22,13 @@
             game.load.tilemap('desert', createJSON(width, height) , null, Phaser.Tilemap.TILED_JSON);
             game.load.image('tiles', 'images/tmw_desert_spacing.png');
             game.load.image('car', 'images/car90.png');
+            game.load.image('ball', 'images/ball.png');
 
         }
 
 
         var followerGroup;
-        var FOLLOWER_AMNT = 1;
+        var FOLLOWER_AMNT = 100;
         var map;
         var layer;
 
@@ -48,7 +49,8 @@
 
             sprite = game.add.sprite(450, 80, 'car');
 
-            followerGroup = new Followers(game, FOLLOWER_AMNT, 'car', sprite);
+            followerGroup = new Followers(game, FOLLOWER_AMNT, 'ball', sprite);
+            
             
 
            
@@ -85,7 +87,8 @@
             {
                 sprite.body.velocity.copyFrom(game.physics.arcade.velocityFromAngle(sprite.angle, 300));
             }
-
+            //game.physics.arcade.collide(sprite, followerGroup); 
+            game.physics.arcade.collide(followerGroup, followerGroup); 
             
            counter++;
 

@@ -22,9 +22,9 @@ function vect_normalize(vector){
 }
 
 /*
- * randPoint innet class generates a radom point 0 - 200 on the x and y axis
+ * RandPoint innet class generates a radom point 0 - 200 on the x and y axis
  */
-var randPoint = function() {
-    this.x = Math.round(Math.random() * 200),
-    this.y = Math.round(Math.random() * 200)
+var RandPoint = function() {
+    this.x = Math.round(Math.random() * 200) - 100,
+    this.y = Math.round(Math.random() * 200) - 100
 }
