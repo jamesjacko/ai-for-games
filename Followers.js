@@ -18,10 +18,10 @@ var Follower = function(game, texture, player ,position){
   this.updateHeading = function(){
     var rand = new RandPoint();
     _this.heading = {
-      x: _this.player.x - _this.position.x + rand.x,
-      y: _this.player.y - _this.position.y + rand.y
-    }
-
+      x: _this.player.position.x - _this.position.x,
+      y: _this.player.position.y - _this.position.y
+    };
+    _this.rotation = Math.atan2(_this.player.position.y, _this.player.position.x);
     
   }
   var rand = new RandPoint();
@@ -57,8 +57,9 @@ Follower.prototype.constructor = Follower;
  * Phaser will call any game objects update function on game.update
  */
 Follower.prototype.update = function(){
-  
-
+  ask({prob: 20, func: this.updateHeading, params: this});
+  this.body.velocity.x = this.heading.x;
+  this.body.velocity.y = this.heading.y;
 }
 
 var Followers = function(game, amnt, texture, player){
@@ -74,30 +75,22 @@ var Followers = function(game, amnt, texture, player){
     var sprite = this.add(follower);
   }
 
+  game.physics.enable(this);
+
 }
 
 Followers.prototype = Object.create(Phaser.Group.prototype);
 Followers.prototype.constructor = Followers;
 
 Followers.prototype.update = function(){
-
-  console.log(this.averageCoord);
+  Phaser.Group.prototype.update.call(this);
   var xs = 0;
   var ys = 0;
   var _this = this;
+
   this.forEach(function(item){
     xs += item.position.x;
     ys += item.position.y;
-    ask({prob: 20, func: item.updateHeading, params: item});
-    if(item.index == -1){
-      item.rotation = Math.atan2(item.player.y - item.position.y, item.player.x - item.position.x);
-      item.body.velocity.x = item.heading.x;
-      item.body.velocity.y = item.heading.y;
-    } else {
-      item.rotation = Math.atan2(_this.averageCoord.y, _this.averageCoord.x);
-      item.body.velocity.x = _this.averageCoord.x;
-      item.body.velocity.y = _this.averageCoord.y;
-    }
   });
   this.averageCoord = {
     x: xs / this.length,
