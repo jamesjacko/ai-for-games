@@ -7,6 +7,7 @@
         <script src="script.js"></script>
         <script src="create-file.js"></script>
         <script src="Followers.js"></script>
+        <script src="BadGuys.js"></script>
     </head>
     <body>
 
@@ -16,7 +17,7 @@
         var width = 100;
         var height = 100;
         var counter = 0;
-        var game = new Phaser.Game(800, 600, Phaser.CANVAS, 'game', { preload: preload, create: create, update: update, render: render });
+        game = new Phaser.Game(800, 600, Phaser.CANVAS, 'game', { preload: preload, create: create, update: update, render: render });
 
         function preload() {
             game.load.tilemap('desert', createJSON(width, height) , null, Phaser.Tilemap.TILED_JSON);
@@ -29,6 +30,8 @@
 
         var followerGroup;
         var FOLLOWER_AMNT = 1;
+        var badGuyGroup;
+        var BAD_GUY_AMNT = 2;
         var map;
         var layer;
 
@@ -49,9 +52,11 @@
 
             sprite = game.add.sprite(450, 80, 'car');
 
-            followerGroup = new Followers(game, FOLLOWER_AMNT, 'ball', sprite);
-            
-            
+            followerGroup = new Followers(game, FOLLOWER_AMNT, 'car', sprite);
+
+            badGuyGroup = new BadGuys(game, BAD_GUY_AMNT, 'car', sprite);
+
+            console.log(game.world);            
 
            
             

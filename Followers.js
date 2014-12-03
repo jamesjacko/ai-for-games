@@ -21,7 +21,6 @@ var Follower = function(game, texture, player ,position){
       x: _this.player.position.x - _this.position.x,
       y: _this.player.position.y - _this.position.y
     };
-    _this.rotation = Math.atan2(_this.player.position.y, _this.player.position.x);
     
   }
   var rand = new RandPoint();
@@ -33,7 +32,7 @@ var Follower = function(game, texture, player ,position){
 
   //set central anchor point.
 
-  _this.anchor = {
+  this.anchor = {
     x: 0.5,
     y: 0.5
   }
@@ -60,6 +59,9 @@ Follower.prototype.update = function(){
   ask({prob: 20, func: this.updateHeading, params: this});
   this.body.velocity.x = this.heading.x;
   this.body.velocity.y = this.heading.y;
+  var dx = this.player.position.x - this.position.x;
+  var dy = this.player.position.y - this.position.y;
+  this.rotation = Math.atan2(dy, dx);
 }
 
 var Followers = function(game, amnt, texture, player){
