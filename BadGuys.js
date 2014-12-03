@@ -44,7 +44,7 @@ var BadGuy = function(game, texture, player, index){
 
     
     
-    var angle = 90;
+    var angle = 180;
     var distance = 200;
     var offsetAngle = (Math.floor(Math.random() * angle) -  angle/2) / (180 * Math.PI);
 
@@ -102,7 +102,7 @@ BadGuy.prototype.update = function(){
 
   ask({prob: 20, func: this.updateHeading, params: this});
 
-  
+
 
   game.physics.arcade.moveToXY(this, this.heading.x, this.heading.y);
   var dx = this.heading.x - this.position.x;
