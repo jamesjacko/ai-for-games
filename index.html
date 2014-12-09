@@ -24,12 +24,13 @@
             game.load.image('tiles', 'images/tmw_desert_spacing.png');
             game.load.image('car', 'images/car90.png');
             game.load.image('ball', 'images/ball.png');
+            game.time.advancedTiming = true;
 
         }
 
 
         var followerGroup;
-        var FOLLOWER_AMNT = 1;
+        var FOLLOWER_AMNT = 0;
         var badGuyGroup;
         var BAD_GUY_AMNT = 2;
         var map;
@@ -69,7 +70,7 @@
 
             cursors = game.input.keyboard.createCursorKeys();
 
-            
+            bool = true
 
         }
 
@@ -93,8 +94,12 @@
                 sprite.body.velocity.copyFrom(game.physics.arcade.velocityFromAngle(sprite.angle, 300));
             }
             //game.physics.arcade.collide(sprite, followerGroup); 
-            game.physics.arcade.collide(followerGroup, followerGroup); 
+            game.physics.arcade.collide(followerGroup, followerGroup);
             
+            if(bool) 
+            console.log(game.time.fps);
+            
+            bool = false
            counter++;
 
         }

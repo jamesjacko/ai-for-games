@@ -8,6 +8,12 @@ var BadGuy = function(game, texture, player, index){
   this.player = player;
   this.index = index;
   this.game = game;
+  this.movementStack = new Array();
+  this.state = "dosile";
+  this.visionCone = game.add.bitmapData(game.world.width, game.world.height);
+  
+  this.visionCone.addToWorld();
+
   this.heading = {
     x: 0,
     y: 0
@@ -30,7 +36,7 @@ var BadGuy = function(game, texture, player, index){
   rand.x += 100;
   rand.y += 100;
   // Call the Sprite constructor using the JS.prototype call function
-  Phaser.Sprite.call(this, game, 300, 300, texture);
+  Phaser.Sprite.call(this, game, game.world.randomX, game.world.randomY, texture);
 
 
   
@@ -42,31 +48,50 @@ var BadGuy = function(game, texture, player, index){
   // update heading function, creates a new heading ahead of the npc 
   this.updateHeading = function(){
 
-    
-    
-    var angle = 180;
+    var angle = 360;
     var distance = 200;
-    var offsetAngle = (Math.floor(Math.random() * angle) -  angle/2) / (180 * Math.PI);
 
     _this.oldHeading.x = _this.position.x + Math.cos(_this.rotation) * distance;
     _this.oldHeading.y = _this.position.y + Math.sin(_this.rotation) * distance;
+    
+    if(_this.state == "dosile"){
+      
+      var offsetAngle = (Math.floor(Math.random() * angle) -  angle/2) / (180 * Math.PI);
 
-    var coneX = _this.position.x + Math.cos(_this.rotation + offsetAngle) * distance;
-    var coneY = _this.position.y + Math.sin(_this.rotation + offsetAngle) * distance;
+      
 
-    // if the new heading is outside the world we need to grab a new one
-    if(areYouOutside(coneX, coneY, _world)){
-      console.log("now");
-      coneX *= -1;
-      coneY *= -1;
+      var coneX = _this.position.x + Math.cos(_this.rotation + offsetAngle) * distance;
+      var coneY = _this.position.y + Math.sin(_this.rotation + offsetAngle) * distance;
+
+      this.line = new Phaser.Line(_this.position.x, _this.position.y, Math.cos(_this.rotation) * distance, Math.cos(_this.rotation) * distance);
+
+      // if the new heading is outside the world we need to grab a new one
+      sanitized = areYouOutside(coneX, coneY, _world);
+      coneX = sanitized.x;
+      coneY = sanitized.y;
+
+      _this.heading = {
+        x: coneX,
+        y: coneY
+      };
+      // rotate the npc towards the new heading
+      _this.goal.position.x = coneX;
+      _this.goal.position.y = coneY;
+      _this.movementStack = [];
+      // get 60 step coords to move npc toward new heading
+      for(var i = 1; i <= 60; i++){
+        _this.movementStack.push(lerp(_this.heading, _this.oldHeading, i/60));
+      }
+    } else if(_this.state == "alert") {
+      _this.heading = {
+        x: _this.position.x,
+        y: _this.position.y
+      }
+      _this.movementStack = [];
+      
     }
-    _this.heading = {
-      x: coneX,
-      y: coneY
-    };
-    // rotate the npc towards the new heading
-    _this.goal.position.x = coneX;
-    _this.goal.position.y = coneY;
+
+    
 
     
   }
@@ -98,16 +123,66 @@ BadGuy.prototype.constructor = BadGuy;
  * Phaser will call any game objects update function on game.update
  */
 BadGuy.prototype.update = function(){
+
+  var angle = findAngle(this.position, this.player.position, this.rotation);
+
+  if(angle * 180 / Math.PI < 70 && findDistance(this.player.position, this.position, this.rotation) < 200){
+    this.state = "alert";
+  } else {
+    this.state = "dosile";
+  }
+
   Phaser.Sprite.prototype.update.call(this);
 
-  ask({prob: 20, func: this.updateHeading, params: this});
+  if(this.state == "alert"){
+      this.body.velocity.x = 0;
+      this.body.velocity.y = 0;
+      var dx = this.player.x - this.position.x;
+      var dy = this.player.y - this.position.y;
+      this.rotation = Math.atan2(dy, dx);
+    
 
+  } else {
+    ask({prob: 20, func: this.updateHeading, params: this});
 
+    var coord;
+    if(coord = this.movementStack.pop()){
+      game.physics.arcade.moveToXY(this, coord.x, coord.y);
+      var dx = coord.x - this.position.x;
+      var dy = coord.y - this.position.y;
+      this.rotation = Math.atan2(dy, dx);
+    } else {
+      
+      game.physics.arcade.moveToXY(this, this.heading.x, this.heading.y);
+    
+      var dx = this.heading.x - this.position.x;
+      var dy = this.heading.y - this.position.y;
+      this.rotation = Math.atan2(dy, dx);
+      
+      
+    }
 
-  game.physics.arcade.moveToXY(this, this.heading.x, this.heading.y);
-  var dx = this.heading.x - this.position.x;
-  var dy = this.heading.y - this.position.y;
-  this.rotation = Math.atan2(dy, dx);
+  }
+
+  var coneX = this.position.x + Math.cos(this.rotation + 70) * 200;
+  var coneY = this.position.y + Math.sin(this.rotation + 70) * 200;
+  var coneMidX = this.position.x + Math.cos(this.rotation) * 270;
+  var coneMidY = this.position.y + Math.sin(this.rotation) * 270;
+  var coneX2 = this.position.x + Math.cos(this.rotation - 70) * 200;
+  var coneY2 = this.position.y + Math.sin(this.rotation - 70) * 200;
+  this.visionCone.clear();
+  this.visionCone.context.beginPath();
+  this.visionCone.context.fillStyle = 'rgba(255, 255, 255, 0.3)';
+  this.visionCone.context.strokeStyle = 'rgba(255, 255, 255, 0.3)';
+  this.visionCone.context.moveTo(this.position.x, this.position.y);
+  this.visionCone.context.lineTo(coneX, coneY);
+  
+  this.visionCone.context.quadraticCurveTo(coneMidX, coneMidY, coneX2, coneY2);
+
+  this.visionCone.context.closePath();
+  this.visionCone.context.fill();
+  this.visionCone.dirty = true;
+
 }
 
 var BadGuys = function(game, amnt, texture, player){
