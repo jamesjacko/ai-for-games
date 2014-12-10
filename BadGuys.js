@@ -127,8 +127,7 @@ BadGuy.prototype.update = function(){
   var angle = findAngle(this.position, this.player.position, this.rotation);
   var VISION_ANGLE = 60;
   var VISION_LENGTH = 200;
-
-  if(angle * (Math.PI / 180) < VISION_ANGLE && findDistance(this.player.position, this.position, this.rotation) < 200){
+  if(Math.abs(angle * (180 / Math.PI)) < VISION_ANGLE && findDistance(this.player.position, this.position, this.rotation) < 200){
     this.state = "alert";
   } else {
     this.state = "dosile";
@@ -168,8 +167,8 @@ BadGuy.prototype.update = function(){
   var angle = VISION_ANGLE * (Math.PI / 180);
   var coneX = this.position.x + Math.cos(this.rotation + angle) * VISION_LENGTH;
   var coneY = this.position.y + Math.sin(this.rotation + angle) * VISION_LENGTH;
-  var coneMidX = this.position.x + Math.cos(this.rotation) * VISION_LENGTH * 1.4;
-  var coneMidY = this.position.y + Math.sin(this.rotation) * VISION_LENGTH * 1.4;
+  var coneMidX = this.position.x + Math.cos(this.rotation) * VISION_LENGTH * 1.3;
+  var coneMidY = this.position.y + Math.sin(this.rotation) * VISION_LENGTH * 1.3;
   var coneX2 = this.position.x + Math.cos(this.rotation - angle) * VISION_LENGTH;
   var coneY2 = this.position.y + Math.sin(this.rotation - angle) * VISION_LENGTH;
   this.visionCone.clear();
