@@ -48,7 +48,7 @@ var BadGuy = function(game, texture, player, index){
   // update heading function, creates a new heading ahead of the npc 
   this.updateHeading = function(){
 
-    var angle = 360;
+    var angle = 90;
     var distance = 200;
 
     _this.oldHeading.x = _this.position.x + Math.cos(_this.rotation) * distance;
@@ -56,7 +56,7 @@ var BadGuy = function(game, texture, player, index){
     
     if(_this.state == "dosile"){
       
-      var offsetAngle = (Math.floor(Math.random() * angle) -  angle/2) / (180 * Math.PI);
+      var offsetAngle = (Math.floor(Math.random() * angle) -  angle/2) * (Math.PI / 180);
 
       
 
@@ -125,8 +125,10 @@ BadGuy.prototype.constructor = BadGuy;
 BadGuy.prototype.update = function(){
 
   var angle = findAngle(this.position, this.player.position, this.rotation);
+  var VISION_ANGLE = 60;
+  var VISION_LENGTH = 200;
 
-  if(angle * 180 / Math.PI < 70 && findDistance(this.player.position, this.position, this.rotation) < 200){
+  if(angle * (Math.PI / 180) < VISION_ANGLE && findDistance(this.player.position, this.position, this.rotation) < 200){
     this.state = "alert";
   } else {
     this.state = "dosile";
@@ -163,13 +165,13 @@ BadGuy.prototype.update = function(){
     }
 
   }
-
-  var coneX = this.position.x + Math.cos(this.rotation + 70) * 200;
-  var coneY = this.position.y + Math.sin(this.rotation + 70) * 200;
-  var coneMidX = this.position.x + Math.cos(this.rotation) * 270;
-  var coneMidY = this.position.y + Math.sin(this.rotation) * 270;
-  var coneX2 = this.position.x + Math.cos(this.rotation - 70) * 200;
-  var coneY2 = this.position.y + Math.sin(this.rotation - 70) * 200;
+  var angle = VISION_ANGLE * (Math.PI / 180);
+  var coneX = this.position.x + Math.cos(this.rotation + angle) * VISION_LENGTH;
+  var coneY = this.position.y + Math.sin(this.rotation + angle) * VISION_LENGTH;
+  var coneMidX = this.position.x + Math.cos(this.rotation) * VISION_LENGTH * 1.4;
+  var coneMidY = this.position.y + Math.sin(this.rotation) * VISION_LENGTH * 1.4;
+  var coneX2 = this.position.x + Math.cos(this.rotation - angle) * VISION_LENGTH;
+  var coneY2 = this.position.y + Math.sin(this.rotation - angle) * VISION_LENGTH;
   this.visionCone.clear();
   this.visionCone.context.beginPath();
   this.visionCone.context.fillStyle = 'rgba(255, 255, 255, 0.3)';

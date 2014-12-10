@@ -22,16 +22,16 @@ function createJSON(worldWidth, worldHeight){
         "tilesets":[
             {
              "firstgid":1,
-             "image":"images/map.png",
-             "imageheight":199,
-             "imagewidth":265,
-             "margin":1,
+             "image":"images/new_map.png",
+             "imageheight":32,
+             "imagewidth":64,
+             "margin":0,
              "name":"Desert",
              "properties":
                 {
 
                 },
-             "spacing":1,
+             "spacing":0,
              "tileheight":32,
              "tilewidth":32
             }],
@@ -55,14 +55,14 @@ function createJSON(worldWidth, worldHeight){
     for(i = 0; i < world.width * world.height; i++){
         if(isEdge(i)){
             // world.layers[0].data.push(Math.round(Math.random()*47) + 1);
-            world.layers[0].data.push(1);
+            world.layers[0].data.push(2);
         } else {
-            world.layers[0].data.push(3);
+            world.layers[0].data.push(1);
         }
     }
 
     for(i = 0; i < world.width * world.height; i++){
-        if(world.layers[0].data[i] == 1){
+        if(world.layers[0].data[i] == 2){
           ask({prob:1, func:sea, params:i});
         }
     }
@@ -93,7 +93,7 @@ function createJSON(worldWidth, worldHeight){
 
     // Turns the required point in the world to sea.
     function makeSea(obj){
-        world.layers[0].data[obj.point] = 1;
+        world.layers[0].data[obj.point] = 2;
     }
 
     var json = JSON.stringify(world);

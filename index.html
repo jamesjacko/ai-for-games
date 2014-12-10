@@ -21,8 +21,10 @@
 
         function preload() {
             game.load.tilemap('desert', createJSON(width, height) , null, Phaser.Tilemap.TILED_JSON);
-            game.load.image('tiles', 'images/tmw_desert_spacing.png');
+            game.load.image('tiles', 'images/new_map.png');
             game.load.image('car', 'images/car90.png');
+            game.load.image('goodGuy', 'images/goodGuy.png');
+            game.load.image('badGuy', 'images/badGuy.png');
             game.load.image('ball', 'images/ball.png');
             game.time.advancedTiming = true;
 
@@ -51,11 +53,11 @@
 
             layer.resizeWorld();
 
-            sprite = game.add.sprite(450, 80, 'car');
+            sprite = game.add.sprite(450, 80, 'goodGuy');
 
             followerGroup = new Followers(game, FOLLOWER_AMNT, 'car', sprite);
 
-            badGuyGroup = new BadGuys(game, BAD_GUY_AMNT, 'car', sprite);
+            badGuyGroup = new BadGuys(game, BAD_GUY_AMNT, 'badGuy', sprite);
 
             console.log(game.world);            
 
