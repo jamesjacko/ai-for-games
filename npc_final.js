@@ -44,7 +44,7 @@ function NPC(game, texture){
     // Get a random point within the constraint angle at DIST length away
     var newX = _this.position.x + Math.cos(_this.rotation + offset) * DIST;
     var newY = _this.position.y + Math.sin(_this.rotation + offset) * DIST;
-    sanitised = areYouOutside(newX, newY, _world);
+    sanitised = areYouOutside(newX, newY, _this.game.world);
     // set the new heading for the NPC
     _this.heading = {
       x: sanitised.x,
