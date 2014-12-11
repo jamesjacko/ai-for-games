@@ -44,7 +44,7 @@ function NPC(game, texture){
     // clear out movement stack
     _this.movementStack = [];
     for(var i = 1; i <= 60; i++){
-      _this.movementStack.push(lerp(_this.heading, _this.oldHeading, i/60));
+      _this.movementStack.push(lerp(_this.heading, _this.currentHeading, i/60));
     }
   }
 }
