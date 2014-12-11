@@ -67,3 +67,7 @@ function findDistance(player, enemy){
   return Math.sqrt(x + y);
 }
 
+function toDegrees(radians){
+  return radians * (180 / Math.PI);
+}
+

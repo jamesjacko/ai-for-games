@@ -3,11 +3,12 @@
     <head>
         <meta charset="UTF-8" />
         <title>hello phaser!</title>
-        <script src="phaser.min.js"></script>
+        <script src="phaser.js"></script>
         <script src="script.js"></script>
         <script src="create-file.js"></script>
         <script src="Followers.js"></script>
         <script src="BadGuys.js"></script>
+        <script src="Munitions.js"></script>
     </head>
     <body>
 
@@ -25,7 +26,8 @@
             game.load.image('car', 'images/car90.png');
             game.load.image('goodGuy', 'images/goodGuy.png');
             game.load.image('badGuy', 'images/badGuy.png');
-            game.load.image('ball', 'images/ball.png');
+            game.load.image('ball', 'images/heading.png');
+            game.load.image('round', 'images/round.png');
             game.time.advancedTiming = true;
 
         }
@@ -34,7 +36,7 @@
         var followerGroup;
         var FOLLOWER_AMNT = 0;
         var badGuyGroup;
-        var BAD_GUY_AMNT = 5;
+        var BAD_GUY_AMNT = 20;
         var map;
         var layer;
 
@@ -71,8 +73,17 @@
             game.camera.follow(sprite);
 
             cursors = game.input.keyboard.createCursorKeys();
+            fireButton = game.input.keyboard.addKey(Phaser.Keyboard.SPACEBAR);
+            fireButton.onDown.add(fire, this);
 
-            bool = true
+            function fire(){
+                bullet = new Round(game, 'round', sprite, badGuyGroup);
+                game.add.existing(bullet);
+                bullet.fire();
+            }
+            bool = true;
+
+
 
         }
 
@@ -108,9 +119,9 @@
 
         function render() {
 
-            game.debug.text('Click to randomise tiles', 32, 32, 'rgb(0,0,0)');
-            game.debug.text('Tile X: ' + layer.getTileX(sprite.x), 32, 48, 'rgb(0,0,0)');
-            game.debug.text('Tile Y: ' + layer.getTileY(sprite.y), 32, 64, 'rgb(0,0,0)');
+            // game.debug.text('Click to randomise tiles', 32, 32, 'rgb(0,0,0)');
+            // game.debug.text('Tile X: ' + layer.getTileX(sprite.x), 32, 48, 'rgb(0,0,0)');
+            // game.debug.text('Tile Y: ' + layer.getTileY(sprite.y), 32, 64, 'rgb(0,0,0)');
 
         }
 

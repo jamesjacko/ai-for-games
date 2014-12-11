@@ -9,8 +9,11 @@ var BadGuy = function(game, texture, player, index){
   this.index = index;
   this.game = game;
   this.movementStack = new Array();
-  this.state = "dosile";
+  this.state = "dosile";  
   this.visionCone = game.add.bitmapData(game.world.width, game.world.height);
+  this.isSelected = false;
+
+  this.nextRound = 0;
   
   this.visionCone.addToWorld();
 
@@ -23,12 +26,12 @@ var BadGuy = function(game, texture, player, index){
     y: 0
   };
 
-  this.goal = game.add.sprite(this.heading.x, this.heading.y, 'ball');
+  //this.goal = game.add.sprite(this.heading.x, this.heading.y, 'ball');
 
-  this.goal.anchor = {
+  /*this.goal.anchor = {
     x: 0.5,
     y: 0.5
-  };
+  };*/
 
   // Get new random point to place the bad guy in the world
   var rand = new RandPoint();
@@ -75,8 +78,8 @@ var BadGuy = function(game, texture, player, index){
         y: coneY
       };
       // rotate the npc towards the new heading
-      _this.goal.position.x = coneX;
-      _this.goal.position.y = coneY;
+      //_this.goal.position.x = coneX;
+      //_this.goal.position.y = coneY;
       _this.movementStack = [];
       // get 60 step coords to move npc toward new heading
       for(var i = 1; i <= 60; i++){
@@ -84,18 +87,33 @@ var BadGuy = function(game, texture, player, index){
       }
     } else if(_this.state == "alert") {
       _this.heading = {
-        x: _this.position.x,
-        y: _this.position.y
-      }
+        x: _this.player.position.x,
+        y: _this.player.position.y
+      };
+      //_this.goal.position.x = _this.heading.x;
+      //_this.goal.position.y = _this.heading.y;
       _this.movementStack = [];
       
     }
+
+
 
     
 
     
   }
   this.updateHeading();
+
+  this.fillMovementStack = function(number){
+
+    this.movementStack = [];
+    for(var i = 1; i <= number; i++){
+      _this.movementStack.push({
+        x: _this.heading.x, 
+        y: _this.heading.y
+      });
+    }
+  }
   
   //set central anchor point.
 
@@ -105,7 +123,7 @@ var BadGuy = function(game, texture, player, index){
   }
   game.physics.enable(this);
 
-  
+  this.inputEnabled = true;
   
 }
 
@@ -127,7 +145,8 @@ BadGuy.prototype.update = function(){
   var angle = findAngle(this.position, this.player.position, this.rotation);
   var VISION_ANGLE = 60;
   var VISION_LENGTH = 200;
-  if(Math.abs(angle * (180 / Math.PI)) < VISION_ANGLE && findDistance(this.player.position, this.position, this.rotation) < 200){
+  if(Math.abs(toDegrees(angle)) < VISION_ANGLE && 
+    findDistance(this.player.position, this.position, this.rotation) < 200){
     this.state = "alert";
   } else {
     this.state = "dosile";
@@ -141,7 +160,21 @@ BadGuy.prototype.update = function(){
       var dx = this.player.x - this.position.x;
       var dy = this.player.y - this.position.y;
       this.rotation = Math.atan2(dy, dx);
-    
+      this.heading.x = this.player.position.x;
+      this.heading.y = this.player.position.y;
+      this.heading = {
+        x: this.player.position.x,
+        y: this.player.position.y
+      };
+      //this.goal.position.x = this.heading.x;
+      //this.goal.position.y = this.heading.y;
+      this.fillMovementStack(60);
+      if(this.game.time.now > this.nextRound){
+        var bullet = new Round(this.game, 'round', this, this.player);
+        game.add.existing(bullet);
+        bullet.fire();
+        this.nextRound = this.game.time.now + 200;
+      }
 
   } else {
     ask({prob: 20, func: this.updateHeading, params: this});
@@ -164,25 +197,27 @@ BadGuy.prototype.update = function(){
     }
 
   }
-  var angle = VISION_ANGLE * (Math.PI / 180);
-  var coneX = this.position.x + Math.cos(this.rotation + angle) * VISION_LENGTH;
-  var coneY = this.position.y + Math.sin(this.rotation + angle) * VISION_LENGTH;
-  var coneMidX = this.position.x + Math.cos(this.rotation) * VISION_LENGTH * 1.3;
-  var coneMidY = this.position.y + Math.sin(this.rotation) * VISION_LENGTH * 1.3;
-  var coneX2 = this.position.x + Math.cos(this.rotation - angle) * VISION_LENGTH;
-  var coneY2 = this.position.y + Math.sin(this.rotation - angle) * VISION_LENGTH;
-  this.visionCone.clear();
-  this.visionCone.context.beginPath();
-  this.visionCone.context.fillStyle = 'rgba(255, 255, 255, 0.3)';
-  this.visionCone.context.strokeStyle = 'rgba(255, 255, 255, 0.3)';
-  this.visionCone.context.moveTo(this.position.x, this.position.y);
-  this.visionCone.context.lineTo(coneX, coneY);
-  
-  this.visionCone.context.quadraticCurveTo(coneMidX, coneMidY, coneX2, coneY2);
+  if(this.isSelected){
+    var angle = VISION_ANGLE * (Math.PI / 180);
+    var coneX = this.position.x + Math.cos(this.rotation + angle) * VISION_LENGTH;
+    var coneY = this.position.y + Math.sin(this.rotation + angle) * VISION_LENGTH;
+    var coneMidX = this.position.x + Math.cos(this.rotation) * VISION_LENGTH * 1.3;
+    var coneMidY = this.position.y + Math.sin(this.rotation) * VISION_LENGTH * 1.3;
+    var coneX2 = this.position.x + Math.cos(this.rotation - angle) * VISION_LENGTH;
+    var coneY2 = this.position.y + Math.sin(this.rotation - angle) * VISION_LENGTH;
+    this.visionCone.clear();
+    this.visionCone.context.beginPath();
+    this.visionCone.context.fillStyle = 'rgba(255, 255, 255, 0.3)';
+    this.visionCone.context.strokeStyle = 'rgba(255, 255, 255, 0.3)';
+    this.visionCone.context.moveTo(this.position.x, this.position.y);
+    this.visionCone.context.lineTo(coneX, coneY);
+    
+    this.visionCone.context.quadraticCurveTo(coneMidX, coneMidY, coneX2, coneY2);
 
-  this.visionCone.context.closePath();
-  this.visionCone.context.fill();
-  this.visionCone.dirty = true;
+    this.visionCone.context.closePath();
+    this.visionCone.context.fill();
+    this.visionCone.dirty = true;
+  }
 
 }
 
@@ -193,13 +228,27 @@ var BadGuys = function(game, amnt, texture, player){
     x: 0,
     y: 0
   }
+
+  var _this = this;
   
+  var listener = function(sprite, pointer){
+    console.log('clicked', sprite);
+    sprite.parent.forEach(function(item){
+      item.visionCone.clear();
+      item.isSelected = (sprite === item);
+    });
+  };
+
   for(var i = 0; i < amnt; i++){
     var aBadGuy = new BadGuy(game, texture, player, i);
+    
     var sprite = this.add(aBadGuy);
+
+    sprite.inputEnabled = true;
+    sprite.events.onInputDown.add(listener,this);
   }
 
-  game.physics.enable(this);
+  
 
 }
 
@@ -211,6 +260,8 @@ BadGuys.prototype.update = function(){
   var xs = 0;
   var ys = 0;
   var _this = this;
+
+
 
   this.forEach(function(item){
     xs += item.position.x;
