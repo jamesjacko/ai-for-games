@@ -31,7 +31,7 @@ var BadGuy = function(game, texture, player, index){
     x: 0,
     y: 0
   };
-  this.oldHeading = {
+  this.currentHeading = {
     x: 0,
     y: 0
   };
@@ -64,8 +64,8 @@ var BadGuy = function(game, texture, player, index){
     var angle = 90;
     var distance = 200;
 
-    _this.oldHeading.x = _this.position.x + Math.cos(_this.rotation) * distance;
-    _this.oldHeading.y = _this.position.y + Math.sin(_this.rotation) * distance;
+    _this.currentHeading.x = _this.position.x + Math.cos(_this.rotation) * distance;
+    _this.currentHeading.y = _this.position.y + Math.sin(_this.rotation) * distance;
     
     if(_this.state == "dosile"){
       
@@ -91,7 +91,7 @@ var BadGuy = function(game, texture, player, index){
       _this.movementStack = [];
       // get 60 step coords to move npc toward new heading
       for(var i = 1; i <= 60; i++){
-        _this.movementStack.push(lerp(_this.heading, _this.oldHeading, i/60));
+        _this.movementStack.push(lerp(_this.heading, _this.currentHeading, i/60));
       }
     } else if(_this.state == "alert") {
       _this.heading = {
@@ -198,8 +198,8 @@ var BadGuy = function(game, texture, player, index){
   this.stopAndAttack = function(){
     this.body.velocity.x = 0;
     this.body.velocity.y = 0;
-    
-    this.seek(50);
+    if(findDistance(this.player.position, this.position, this.rotation) > 100)
+      this.seek(50);
 
     if(this.game.time.now > this.nextRound){
       var bullet = new Round(this.game, 'round', this, this.player);
@@ -207,6 +207,26 @@ var BadGuy = function(game, texture, player, index){
       bullet.fire();
       this.nextRound = this.game.time.now + this.FIRE_RATE;
     }
+  }
+
+  this.avoidOthers = function(){
+    _this = this;
+    this.parent.forEach(function(item){
+
+      if(item != _this){
+        var angle = findAngle(_this.position, item.position, _this.rotation) * (180 / Math.PI);
+        var dist = findDistance(_this.position, item.position);
+        var increment = (Math.floor(Math.random()*2) == 1)? -1: 1;
+        if(dist < 200){
+          while(angle < 20){
+            _this.rotation += increment;
+            angle = findAngle(_this.position, item.position, _this.rotation) * (180 / Math.PI);
+            _this.currentHeading.x = _this.position.x + Math.cos(_this.rotation) * _this.DIST;
+            _this.currentHeading.y = _this.position.y + Math.sin(_this.rotation) * _this.DIST;
+          }
+        }
+      }
+    });
   }
   
 }
@@ -225,9 +245,13 @@ BadGuy.prototype.constructor = BadGuy;
  * Phaser will call any game objects update function on game.update
  */
 BadGuy.prototype.update = function(){
+
+
   if(this.health < 1){
     this.destroy();
   } else {
+
+    this.avoidOthers();
   
     this.setState();
     
