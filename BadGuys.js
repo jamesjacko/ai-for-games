@@ -12,6 +12,16 @@ var BadGuy = function(game, texture, player, index){
   this.state = "dosile";  
   this.visionCone = game.add.bitmapData(game.world.width, game.world.height);
   this.isSelected = false;
+  this.onWater = false;
+  this.seekTimer = 0;
+  this.health = 1;
+
+  this.VISION_ANGLE = 60;
+  this.VISION_LENGTH = 200;
+  this.FIRE_RATE = 400;
+  this.SEEK_TIME = 1000;
+  this.SEEK_SPEED = 150;
+  this.visionMagnifier = 1;
 
   this.nextRound = 0;
   
@@ -78,8 +88,6 @@ var BadGuy = function(game, texture, player, index){
         y: coneY
       };
       // rotate the npc towards the new heading
-      //_this.goal.position.x = coneX;
-      //_this.goal.position.y = coneY;
       _this.movementStack = [];
       // get 60 step coords to move npc toward new heading
       for(var i = 1; i <= 60; i++){
@@ -90,16 +98,9 @@ var BadGuy = function(game, texture, player, index){
         x: _this.player.position.x,
         y: _this.player.position.y
       };
-      //_this.goal.position.x = _this.heading.x;
-      //_this.goal.position.y = _this.heading.y;
       _this.movementStack = [];
       
     }
-
-
-
-    
-
     
   }
   this.updateHeading();
@@ -114,6 +115,10 @@ var BadGuy = function(game, texture, player, index){
       });
     }
   }
+
+  this.setOnWater = function(on){
+    this.onWater = on;
+  }
   
   //set central anchor point.
 
@@ -124,6 +129,85 @@ var BadGuy = function(game, texture, player, index){
   game.physics.enable(this);
 
   this.inputEnabled = true;
+
+  this.setState = function(){
+
+    this.visionMagnifier = (this.state == "alert" || this.state == "seek")? 2 : 1;
+
+    var angle = findAngle(this.position, this.player.position, this.rotation);
+      if(Math.abs(toDegrees(angle)) < this.VISION_ANGLE && 
+      findDistance(this.player.position, this.position, this.rotation) < this.VISION_LENGTH * this.visionMagnifier){
+      this.state = "alert";
+      this.seekTimer = this.game.time.now + this.SEEK_TIME;
+      this.heading.x = this.player.position.x;
+      this.heading.y = this.player.position.y;
+    } else if(this.game.time.now > this.seekTimer) {
+      this.state = "dosile";
+    } else {
+      this.state = "seek";
+    }
+  }
+
+  this.drawCone = function(){
+    var angle = this.VISION_ANGLE * (Math.PI / 180);
+    var coneX = this.position.x + Math.cos(this.rotation + angle) * this.VISION_LENGTH * this.visionMagnifier;
+    var coneY = this.position.y + Math.sin(this.rotation + angle) * this.VISION_LENGTH * this.visionMagnifier;
+    var coneMidX = this.position.x + Math.cos(this.rotation) * this.VISION_LENGTH * 1.4 * this.visionMagnifier;
+    var coneMidY = this.position.y + Math.sin(this.rotation) * this.VISION_LENGTH * 1.4 * this.visionMagnifier;
+    var coneX2 = this.position.x + Math.cos(this.rotation - angle) * this.VISION_LENGTH * this.visionMagnifier;
+    var coneY2 = this.position.y + Math.sin(this.rotation - angle) * this.VISION_LENGTH * this.visionMagnifier;
+    this.visionCone.clear();
+    this.visionCone.context.beginPath();
+    this.visionCone.context.fillStyle = 'rgba(255, 255, 255, 0.3)';
+    this.visionCone.context.strokeStyle = 'rgba(255, 255, 255, 0.3)';
+    this.visionCone.context.moveTo(this.position.x, this.position.y);
+    this.visionCone.context.lineTo(coneX, coneY);
+    
+    this.visionCone.context.quadraticCurveTo(coneMidX, coneMidY, coneX2, coneY2);
+
+    this.visionCone.context.closePath();
+    this.visionCone.context.fill();
+    this.visionCone.dirty = true;
+  }
+
+  this.wander = function(){
+    var coord;
+    if(coord = this.movementStack.pop()){
+      game.physics.arcade.moveToXY(this, coord.x, coord.y);
+      var dx = coord.x - this.position.x;
+      var dy = coord.y - this.position.y;
+      this.rotation = Math.atan2(dy, dx);
+    } else {
+      var speed = this.onWater? 30: 60
+      game.physics.arcade.moveToXY(this, this.heading.x, this.heading.y, speed);
+      
+      var dx = this.heading.x - this.position.x;
+      var dy = this.heading.y - this.position.y;
+      this.rotation = Math.atan2(dy, dx);
+    }
+  }
+
+  this.seek = function(speed){
+      game.physics.arcade.moveToXY(this, this.heading.x, this.heading.y, speed);
+      
+      var dx = this.heading.x - this.position.x;
+      var dy = this.heading.y - this.position.y;
+      this.rotation = Math.atan2(dy, dx);
+  }
+
+  this.stopAndAttack = function(){
+    this.body.velocity.x = 0;
+    this.body.velocity.y = 0;
+    
+    this.seek(50);
+
+    if(this.game.time.now > this.nextRound){
+      var bullet = new Round(this.game, 'round', this, this.player);
+      game.add.existing(bullet);
+      bullet.fire();
+      this.nextRound = this.game.time.now + this.FIRE_RATE;
+    }
+  }
   
 }
 
@@ -141,82 +225,30 @@ BadGuy.prototype.constructor = BadGuy;
  * Phaser will call any game objects update function on game.update
  */
 BadGuy.prototype.update = function(){
-
-  var angle = findAngle(this.position, this.player.position, this.rotation);
-  var VISION_ANGLE = 60;
-  var VISION_LENGTH = 200;
-  if(Math.abs(toDegrees(angle)) < VISION_ANGLE && 
-    findDistance(this.player.position, this.position, this.rotation) < 200){
-    this.state = "alert";
+  if(this.health < 1){
+    this.destroy();
   } else {
-    this.state = "dosile";
-  }
-
-  Phaser.Sprite.prototype.update.call(this);
-
-  if(this.state == "alert"){
-      this.body.velocity.x = 0;
-      this.body.velocity.y = 0;
-      var dx = this.player.x - this.position.x;
-      var dy = this.player.y - this.position.y;
-      this.rotation = Math.atan2(dy, dx);
-      this.heading.x = this.player.position.x;
-      this.heading.y = this.player.position.y;
-      this.heading = {
-        x: this.player.position.x,
-        y: this.player.position.y
-      };
-      //this.goal.position.x = this.heading.x;
-      //this.goal.position.y = this.heading.y;
-      this.fillMovementStack(60);
-      if(this.game.time.now > this.nextRound){
-        var bullet = new Round(this.game, 'round', this, this.player);
-        game.add.existing(bullet);
-        bullet.fire();
-        this.nextRound = this.game.time.now + 200;
-      }
-
-  } else {
-    ask({prob: 20, func: this.updateHeading, params: this});
-
-    var coord;
-    if(coord = this.movementStack.pop()){
-      game.physics.arcade.moveToXY(this, coord.x, coord.y);
-      var dx = coord.x - this.position.x;
-      var dy = coord.y - this.position.y;
-      this.rotation = Math.atan2(dy, dx);
-    } else {
-      
-      game.physics.arcade.moveToXY(this, this.heading.x, this.heading.y);
+  
+    this.setState();
     
-      var dx = this.heading.x - this.position.x;
-      var dy = this.heading.y - this.position.y;
-      this.rotation = Math.atan2(dy, dx);
-      
-      
+
+    Phaser.Sprite.prototype.update.call(this);
+
+    switch(this.state){
+      case "alert":
+        this.stopAndAttack();
+        break;
+      case "dosile":
+        ask({prob: 20, func: this.updateHeading, params: this});
+        this.wander();
+        break;
+      case "seek":
+        this.seek(this.SEEK_SPEED);
     }
 
-  }
-  if(this.isSelected){
-    var angle = VISION_ANGLE * (Math.PI / 180);
-    var coneX = this.position.x + Math.cos(this.rotation + angle) * VISION_LENGTH;
-    var coneY = this.position.y + Math.sin(this.rotation + angle) * VISION_LENGTH;
-    var coneMidX = this.position.x + Math.cos(this.rotation) * VISION_LENGTH * 1.3;
-    var coneMidY = this.position.y + Math.sin(this.rotation) * VISION_LENGTH * 1.3;
-    var coneX2 = this.position.x + Math.cos(this.rotation - angle) * VISION_LENGTH;
-    var coneY2 = this.position.y + Math.sin(this.rotation - angle) * VISION_LENGTH;
-    this.visionCone.clear();
-    this.visionCone.context.beginPath();
-    this.visionCone.context.fillStyle = 'rgba(255, 255, 255, 0.3)';
-    this.visionCone.context.strokeStyle = 'rgba(255, 255, 255, 0.3)';
-    this.visionCone.context.moveTo(this.position.x, this.position.y);
-    this.visionCone.context.lineTo(coneX, coneY);
-    
-    this.visionCone.context.quadraticCurveTo(coneMidX, coneMidY, coneX2, coneY2);
-
-    this.visionCone.context.closePath();
-    this.visionCone.context.fill();
-    this.visionCone.dirty = true;
+    if(this.isSelected){
+      this.drawCone();
+    }
   }
 
 }
