@@ -172,7 +172,9 @@ var BadGuy = function(game, texture, index){
 
   this.wander = function(){
     var coord;
-    var speed = this.onWater? 10: 60
+
+    // speed of bad guys increases as killCount goes higher
+    var speed = 60 * (1 + (game.killCount / 15));
     if(coord = this.movementStack.pop()){
       game.physics.arcade.moveToXY(this, coord.x, coord.y, speed);
       var dx = coord.x - this.position.x;
@@ -286,10 +288,10 @@ var BadGuys = function(game, amnt, texture){
     x: 0,
     y: 0
   }
-
+  this.amnt = amnt;
   var _this = this;
   
-  var listener = function(sprite, pointer){
+  this.listener = function(sprite, pointer){
     console.log('clicked', sprite);
     sprite.parent.forEach(function(item){
       item.visionCone.clear();
@@ -297,14 +299,18 @@ var BadGuys = function(game, amnt, texture){
     });
   };
 
-  for(var i = 0; i < amnt; i++){
-    var aBadGuy = new BadGuy(game, texture, i);
-    
-    var sprite = this.add(aBadGuy);
+  this.addBadGuys = function(amnt){
+    for(var i = 0; i < amnt; i++){
+      var aBadGuy = new BadGuy(game, texture, i);
+      
+      var sprite = this.add(aBadGuy);
 
-    sprite.inputEnabled = true;
-    sprite.events.onInputDown.add(listener,this);
+      sprite.inputEnabled = true;
+      sprite.events.onInputDown.add(_this.listener,this);
+    }
   }
+  
+  this.addBadGuys(this.amnt);
 
   
 
@@ -321,12 +327,7 @@ BadGuys.prototype.update = function(){
 
 
 
-  this.forEach(function(item){
-    xs += item.position.x;
-    ys += item.position.y;
-  });
-  this.averageCoord = {
-    x: xs / this.length,
-    y: ys / this.length
+  if(this.children.length < 5){
+    this.addBadGuys(this.amnt / 2);
   }
 }

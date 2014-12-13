@@ -3,10 +3,19 @@ var Hero = function(game, texture){
   this.texture = texture;
   this.onWater = false;
 
-  Phaser.Sprite.call(this, game, 100, 100, texture);
+  
+
+  Phaser.Sprite.call(this, game, 400, 400, texture);
 
   this.anchor.setTo(0.5, 0.5);
   this.health = 50;
+
+  this.healthBar = this.game.add.sprite(this.position.x - this.width / 2,this.position.y - this.height / 2 - 10,'healthbar');
+  this.healthBar.cropEnabled = true;
+  this.healthBar.anchor.setTo(0, 0);
+
+  game.physics.enable(this.healthBar);
+  
 
   game.physics.enable(this);
   game.camera.follow(this);
@@ -50,6 +59,9 @@ Hero.prototype.update = function(){
       this.body.velocity.x = 0;
       this.body.velocity.y = 0;
       this.body.angularVelocity = 0;
+      this.healthBar.width = (this.health / 50) * 50;
+      this.healthBar.position.x = this.position.x - this.width / 2;
+      this.healthBar.position.y = this.position.y - this.height / 2 - 10;
 
       var inc = (this.onWater)? 100: 200;
 

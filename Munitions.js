@@ -13,6 +13,9 @@ var Round = function(game, texture, shooter, victim){
 	}
 	game.physics.enable(this);
 	this.killVictim = function(round, victim){
+		if(_this.shooter instanceof Hero){
+			game.killCount++;
+		}
 		round.destroy();
 		victim.health--;
 	}
@@ -40,7 +43,11 @@ var Mine = function(game, texture, shooter, victim){
 	this.shooter = shooter;
 	this.victim = victim;
 	Phaser.Sprite.call(this, game, shooter.position.x, shooter.position.y, texture);
+	var _this = this;
 	this.killVictim = function(mine, victim){
+		if(_this.shooter instanceof Hero){
+			game.killCount++;
+		}
 		mine.destroy();
 		victim.health -= 10;
 	}

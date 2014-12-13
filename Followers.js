@@ -90,12 +90,4 @@ Followers.prototype.update = function(){
   var ys = 0;
   var _this = this;
 
-  this.forEach(function(item){
-    xs += item.position.x;
-    ys += item.position.y;
-  });
-  this.averageCoord = {
-    x: xs / this.length,
-    y: ys / this.length
-  }
 }

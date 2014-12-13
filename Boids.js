@@ -6,10 +6,10 @@ function Boid(game, texture, index, vel){
 this.maxVelocity = vel;
 
 this.n = index;
-this.xVelocity = Math.floor(Math.random() * this.maxVelocity * 2) - this.maxVelocity;
-this.yVelocity = Math.floor(Math.random() * this.maxVelocity * 2) - this.maxVelocity;
+this.xVelocity = Math.floor(Math.random() * this.maxVelocity) - this.maxVelocity / 2;
+this.yVelocity = Math.floor(Math.random() * this.maxVelocity) - this.maxVelocity / 2;
 
-Phaser.Sprite.call(this, game, Math.floor(Math.random() * this.maxVelocity * 10), Math.floor(Math.random() * this.maxVelocity * 10), texture);
+Phaser.Sprite.call(this, game, Math.floor(Math.random() * 800), Math.floor(Math.random() * 800), texture);
 game.physics.enable(this);
 
 }
@@ -35,14 +35,14 @@ Boid.prototype.update = function(){
 var Boids = function(game){
   this.numBoids = 50;
 
-  this.maxVelocity = 5;
+  this.maxVelocity = 3;
   this.minSafeDistance = 25;
   this.minY = 0;
   this.maxY = game.world.height;
   this.minX = 0;
   this.maxX = game.world.width;
 
-  this.followFlockTendency = 0.3;
+  this.followFlockTendency = 0.5;
 
   this.aimAtFlockCenterTendency = 0.3;
 
