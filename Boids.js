@@ -212,6 +212,46 @@ var Boids = function(game){
     
   };
 
+  this.avoidPlayer = function(boid) {
+    
+    var xAdjustment = 0;
+    var yAdjustment = 0;
+    
+    // Is this boid too close to the player?
+    var playerSafeDistance = this.minSafeDistance * 2;
+    var isTooClose = this.areBoidsTooClose(
+                boid, game.player, playerSafeDistance);
+                
+    // If this boid is too close to the player, adjust this
+    // boid's velocity so it'll fly away from the big dangerous
+    // rock.
+    if (isTooClose) {
+        var dX = boid.x - game.player.position.x;
+        var dY = boid.y - game.player.position.y;
+        var sqrtSafeDist = Math.sqrt(playerSafeDistance);
+                
+        if (dX < 0) {
+            dX = -sqrtSafeDist - dX;
+        }
+        else {
+            dX = sqrtSafeDist - dX;
+        }
+                
+        if (dY < 0) {
+            dY = -sqrtSafeDist - dY;
+        }
+        else {
+            dY = sqrtSafeDist - dY;
+        }
+        
+        xAdjustment += dX;
+        yAdjustment += dY;
+    }
+    
+    boid.xVelocity -= xAdjustment / 1.2;
+    boid.yVelocity -= yAdjustment / 1.2;
+  };
+
   // This function is called once per animation for each boid.
   // It makes sure the boid isn't going too fast.
   this.restrictVelocity = function(boid) {
@@ -224,18 +264,10 @@ var Boids = function(game){
   // and adjusts the position of the boid for the next step of
   // the animation.
   this.positionBoid = function(boid) {
-    // Simple rule #1: follow the flock's flight direction
     this.followFlock(boid);
-    
-    // Simple rule #2: aim into the center of the flock
     this.aimAtCenterOfFlock(boid);
-    
-    // Simple rule #3: avoid collision with other boids
     this.avoidOtherBoids(boid);
-    
-    
-    // Make sure nobody is going to get a speeding ticket for
-    // flying too fast
+    this.avoidPlayer(boid);
     this.restrictVelocity(boid);
 
     
