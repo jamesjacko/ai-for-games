@@ -81,24 +81,24 @@ NPC.prototype = Object.create(Phaser.Sprite.prototype);
 
 NPC.prototype.constructor = NPC;
 
-NPC.prototype.update = function(){
-  _this = this;
-  this.parent.forEach(function(item){
+  NPC.prototype.update = function(){
+    _this = this;
+    this.parent.forEach(function(item){
 
-    if(item != _this){
-      var angle = findAngle(_this.position, item.position, _this.rotation) * (180 / Math.PI);
-      var dist = findDistance(_this.position, item.position);
-      var increment = (Math.floor(Math.random()*2) == 1)? -1: 1;
-      if(dist < 200){
-        while(angle < 20){
-          _this.rotation += increment;
-          angle = findAngle(_this.position, item.position, _this.rotation) * (180 / Math.PI);
-          _this.currentHeading.x = _this.position.x + Math.cos(_this.rotation) * _this.DIST;
-          _this.currentHeading.y = _this.position.y + Math.sin(_this.rotation) * _this.DIST;
+      if(item != _this){
+        var angle = findAngle(_this.position, item.position, _this.rotation) * (180 / Math.PI);
+        var dist = findDistance(_this.position, item.position);
+        var increment = angle < 0? -1: 1;
+        if(dist < 200){
+          while(angle < 20){
+            _this.rotation += increment;
+            angle = findAngle(_this.position, item.position, _this.rotation) * (180 / Math.PI);
+            _this.currentHeading.x = _this.position.x + Math.cos(_this.rotation) * _this.DIST;
+            _this.currentHeading.y = _this.position.y + Math.sin(_this.rotation) * _this.DIST;
+          }
         }
       }
-    }
-  })
+    });
 
   if(Math.floor(Math.random() * 20) === 0)
     this.updateHeading(this);

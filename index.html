@@ -1,152 +1,99 @@
 <!doctype html>
 <html>
-    <head>
-        <meta charset="UTF-8" />
-        <title>Game</title>
-        <script src="phaser.js"></script>
-        <script src="sylvester.js"></script>
-        <script src="script.js"></script>
-        <script src="create-file.js"></script>
-        <script src="Followers.js"></script>
-        <script src="BadGuys.js"></script>
-        <script src="Munitions.js"></script>
-    </head>
-    <body>
+  <head>
+    <meta charset="UTF-8" />
+    <title>Game</title>
+    <script src="phaser.js"></script>
+    <script src="sylvester.js"></script>
+    <script src="script.js"></script>
+    <script src="create-file.js"></script>
+    <script src="Hero.js"></script>
+    <script src="Followers.js"></script>
+    <script src="BadGuys.js"></script>
+    <script src="Boids.js"></script>
+    <script src="Munitions.js"></script>
+  </head>
+  <body>
 
-    <script type="text/javascript">
+  <script type="text/javascript">
 
-    window.onload = function() {
-        var width = 100;
-        var height = 100;
-        var counter = 0;
-        game = new Phaser.Game(800, 600, Phaser.CANVAS, 'game', { preload: preload, create: create, update: update, render: render });
+  window.onload = function() {
+    var width = 100;
+    var height = 100;
+    var counter = 0;
+    game = new Phaser.Game(800, 600, Phaser.CANVAS, 'game', { preload: preload, create: create, update: update, render: render });
 
-        function preload() {
-            game.load.tilemap('desert', createJSON(width, height) , null, Phaser.Tilemap.TILED_JSON);
-            game.load.image('tiles', 'images/new_map.png');
-            game.load.image('car', 'images/car90.png');
-            game.load.image('goodGuy', 'images/goodGuy.png');
-            game.load.image('badGuy', 'images/badGuy.png');
-            game.load.image('ball', 'images/heading.png');
-            game.load.image('round', 'images/round.png');
-            game.load.image('mine', 'images/mine.png');
-            game.time.advancedTiming = true;
+    function preload() {
+      game.load.tilemap('desert', createJSON(width, height) , null, Phaser.Tilemap.TILED_JSON);
+      game.load.image('tiles', 'images/new_map.png');
+      game.load.image('car', 'images/car90.png');
+      game.load.image('goodGuy', 'images/goodGuy.png');
+      game.load.image('badGuy', 'images/badGuy.png');
+      game.load.image('ball', 'images/heading.png');
+      game.load.image('round', 'images/round.png');
+      game.load.image('mine', 'images/mine.png');
+      game.time.advancedTiming = true;
 
-        }
-
-
-        var followerGroup;
-        var FOLLOWER_AMNT = 0;
-        var badGuyGroup;
-        var BAD_GUY_AMNT = 20;
-        var map;
-        var layer;
-
-        var cursors;
-        var sprite;
-
-        function create() {
-
-            game.physics.startSystem(Phaser.Physics.ARCADE);
-
-            map = game.add.tilemap('desert');
-
-            map.addTilesetImage('Desert', 'tiles');
-
-            layer = map.createLayer('Ground');
-
-            layer.resizeWorld();
-
-            sprite = game.add.sprite(450, 80, 'goodGuy');
+    }
 
 
+    var FOLLOWER_AMNT = 0;
 
-            followerGroup = new Followers(game, FOLLOWER_AMNT, 'car', sprite);
+    var BAD_GUY_AMNT = 20;
+    var map;
+    var layer;
 
-            badGuyGroup = new BadGuys(game, BAD_GUY_AMNT, 'badGuy', sprite);
+    var cursors;
 
-            console.log(game.world);            
+    function create() {
 
-           
-            
-            sprite.anchor.setTo(0.5, 0.5);
-            sprite.health = 50;
+      game.physics.startSystem(Phaser.Physics.ARCADE);
 
-            game.physics.enable(sprite);
-            
+      map = game.add.tilemap('desert');
 
-            game.camera.follow(sprite);
+      map.addTilesetImage('Desert', 'tiles');
 
-            map.setTileIndexCallback(2, collide, this);
+      layer = map.createLayer('Ground');
 
-            cursors = game.input.keyboard.createCursorKeys();
-            fireButton = game.input.keyboard.addKey(Phaser.Keyboard.SPACEBAR);
-            mineButton = game.input.keyboard.addKey(Phaser.Keyboard.M);
-            fireButton.onDown.add(fire, this);
-            mineButton.onDown.add(placeMine, this);
+      layer.resizeWorld();
 
-            function fire(){
-                bullet = new Round(game, 'round', sprite, badGuyGroup);
-                game.add.existing(bullet);
-                bullet.fire();
-            }
+      game.player = new Hero(game, 'goodGuy');
+      game.player = game.add.existing(game.player);
+      game.followerGroup = new Followers(game, FOLLOWER_AMNT, 'car');
+      game.badGuyGroup = new BadGuys(game, BAD_GUY_AMNT, 'badGuy');
+      game.boids = new Boids(game);
 
-            function placeMine(){
-                mine = new Mine(game, 'mine', sprite, badGuyGroup);
-                game.add.existing(mine);
-            }
-            bool = true;
+      
 
-            
+      map.setTileIndexCallback(1, collide, this, layer);
+      map.setTileIndexCallback(2, collide, this, layer);
 
+    }
 
-        }
+    function collide(dude, layer){
+      dude.setOnWater(layer.index == 2);
+    }
 
-        function collide(dude, layer){
-                if(layer.index = 2)
-                    dude.setOnWater(true);
-            }
+    function update() {
+      
+      game.physics.arcade.collide(game.followerGroup, game.followerGroup);
+      game.physics.arcade.collide(game.badGuyGroup, game.badGuyGroup);
+      
+      this.game.physics.arcade.collide(game.player, layer, collide);
 
-        function update() {
-            game.physics.arcade.collide(badGuyGroup, layer, collide);
+    }
 
+    function render() {
 
-            sprite.body.velocity.x = 0;
-            sprite.body.velocity.y = 0;
-            sprite.body.angularVelocity = 0;
+      
+      game.debug.text('Lives: ' + game.player.health, 32, 64, 'rgb(0,255,0)');
+      game.debug.text('Bad Guy Count: ' + game.badGuyGroup.children.length, 32, 32, 'rgb(0,255,0)');
 
-            if (cursors.left.isDown)
-            {
-                sprite.body.angularVelocity = -200;
-            }
-            else if (cursors.right.isDown)
-            {
-                sprite.body.angularVelocity = 200;
-            }
+    }
 
-            if (cursors.up.isDown)
-            {
-                sprite.body.velocity.copyFrom(game.physics.arcade.velocityFromAngle(sprite.angle, 300));
-            }
-            //game.physics.arcade.collide(sprite, followerGroup); 
-            game.physics.arcade.collide(followerGroup, followerGroup);
-            
-            
-           counter++;
+  };
 
-        }
-
-        function render() {
-
-            
-            game.debug.text('Lives: ' + sprite.health, 32, 64, 'rgb(0,255,0)');
-            game.debug.text('Bad Guy Count: ' + badGuyGroup.children.length, 32, 32, 'rgb(0,255,0)');
-
-        }
-
-    };
-
-    </script>
-        <div id="game"></div>
-    </body>
+  </script>
+    <div id="game"></div>
+  </body>
 </html>

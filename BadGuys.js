@@ -4,8 +4,8 @@
  * @param textrue the texture to use to draw the sprite
  * @param player the player sprite to be used for game logic
 */
-var BadGuy = function(game, texture, player, index){
-  this.player = player;
+var BadGuy = function(game, texture, index){
+  this.player = game.player;
   this.index = index;
   this.game = game;
   this.movementStack = new Array();
@@ -172,13 +172,14 @@ var BadGuy = function(game, texture, player, index){
 
   this.wander = function(){
     var coord;
+    var speed = this.onWater? 10: 60
     if(coord = this.movementStack.pop()){
-      game.physics.arcade.moveToXY(this, coord.x, coord.y);
+      game.physics.arcade.moveToXY(this, coord.x, coord.y, speed);
       var dx = coord.x - this.position.x;
       var dy = coord.y - this.position.y;
       this.rotation = Math.atan2(dy, dx);
     } else {
-      var speed = this.onWater? 30: 60
+      
       game.physics.arcade.moveToXY(this, this.heading.x, this.heading.y, speed);
       
       var dx = this.heading.x - this.position.x;
@@ -188,7 +189,8 @@ var BadGuy = function(game, texture, player, index){
   }
 
   this.seek = function(speed){
-      game.physics.arcade.moveToXY(this, this.heading.x, this.heading.y, speed);
+      var speedChng = this.onWater? speed/2: speed
+      game.physics.arcade.moveToXY(this, this.heading.x, this.heading.y, speedChng);
       
       var dx = this.heading.x - this.position.x;
       var dy = this.heading.y - this.position.y;
@@ -216,7 +218,7 @@ var BadGuy = function(game, texture, player, index){
       if(item != _this){
         var angle = findAngle(_this.position, item.position, _this.rotation) * (180 / Math.PI);
         var dist = findDistance(_this.position, item.position);
-        var increment = (Math.floor(Math.random()*2) == 1)? -1: 1;
+        var increment = angle > 0? 1: -1;
         if(dist < 200){
           while(angle < 20){
             _this.rotation += increment;
@@ -277,7 +279,7 @@ BadGuy.prototype.update = function(){
 
 }
 
-var BadGuys = function(game, amnt, texture, player){
+var BadGuys = function(game, amnt, texture){
   Phaser.Group.call(this, game);
 
   this.averageCoord = {
@@ -296,7 +298,7 @@ var BadGuys = function(game, amnt, texture, player){
   };
 
   for(var i = 0; i < amnt; i++){
-    var aBadGuy = new BadGuy(game, texture, player, i);
+    var aBadGuy = new BadGuy(game, texture, i);
     
     var sprite = this.add(aBadGuy);
 

@@ -4,8 +4,8 @@
  * @param textrue the texture to use to draw the sprite
  * @param player the player sprite to be used for game logic
 */
-var Follower = function(game, texture, player ,position){
-  this.player = player;
+var Follower = function(game, texture ,position){
+  this.player = game.player;
   this.index = position;
   this.heading = {
     x: 0,
@@ -64,7 +64,7 @@ Follower.prototype.update = function(){
   this.rotation = Math.atan2(dy, dx);
 }
 
-var Followers = function(game, amnt, texture, player){
+var Followers = function(game, amnt, texture){
   Phaser.Group.call(this, game);
 
   this.averageCoord = {
@@ -73,7 +73,7 @@ var Followers = function(game, amnt, texture, player){
   }
   
   for(var i = 0; i < amnt; i++){
-    var follower = new Follower(game, texture, player, i);
+    var follower = new Follower(game, texture, i);
     var sprite = this.add(follower);
   }
 
