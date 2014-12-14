@@ -8,7 +8,7 @@ var Hero = function(game, texture){
   Phaser.Sprite.call(this, game, 400, 400, texture);
 
   this.anchor.setTo(0.5, 0.5);
-  this.health = 50;
+  this.health = 20;
 
   this.healthBar = this.game.add.sprite(this.position.x - this.width / 2,this.position.y - this.height / 2 - 10,'healthbar');
   this.healthBar.cropEnabled = true;
@@ -56,10 +56,12 @@ Hero.prototype.constructor = Hero;
  * Phaser will call any game objects update function on game.update
  */
 Hero.prototype.update = function(){
+      if(this.health < 1)
+        window.location.reload();
       this.body.velocity.x = 0;
       this.body.velocity.y = 0;
       this.body.angularVelocity = 0;
-      this.healthBar.width = (this.health / 50) * 50;
+      this.healthBar.width = (this.health / 20) * 20;
       this.healthBar.position.x = this.position.x - this.width / 2;
       this.healthBar.position.y = this.position.y - this.height / 2 - 10;
 

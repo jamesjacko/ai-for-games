@@ -1,3 +1,6 @@
+/**
+ * Animals Group Class
+ */
 var animalsGroup;
 
 function addAnimals(game){

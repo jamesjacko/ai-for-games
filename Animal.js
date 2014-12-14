@@ -1,3 +1,6 @@
+/**
+ * Andimal Class
+ */ 
 var Animal = function(game, x, y, type){
   this.xspeed = 1;
   this.yspeed = 1;

@@ -1,13 +1,10 @@
 function Boid(game, texture, index, vel){
-this.maxVelocity = vel;
-
-this.n = index;
-this.xVelocity = Math.floor(Math.random() * this.maxVelocity) - this.maxVelocity / 2;
-this.yVelocity = Math.floor(Math.random() * this.maxVelocity) - this.maxVelocity / 2;
-
-Phaser.Sprite.call(this, game, Math.floor(Math.random() * 800), Math.floor(Math.random() * 800), texture);
-game.physics.enable(this);
-
+  this.maxVelocity = vel;
+  this.n = index;
+  this.xVelocity = Math.floor(Math.random() * this.maxVelocity) - this.maxVelocity / 2;
+  this.yVelocity = Math.floor(Math.random() * this.maxVelocity) - this.maxVelocity / 2;
+  Phaser.Sprite.call(this, game, Math.floor(Math.random() * 800), Math.floor(Math.random() * 800), texture);
+  game.physics.enable(this);
 }
 
 /*
@@ -28,11 +25,29 @@ Boid.prototype.update = function(){
   this.body.velocity.y = this.yVelocity;
 };
 
+
+var distance = function(dX, dY) {
+  return Math.sqrt((dX * dX) + (dY * dY)) * 1.0;
+};
+
+
+var distanceBetween = function(boidA, boidB) {
+  return distance(
+    boidA.position.x - boidB.position.x,
+    boidA.position.y - boidB.position.y
+    );
+};
+
+var areBoidsTooClose = function(boid, otherBoid, safeDist) {
+  return distanceBetween(boid, otherBoid) < safeDist;
+};
+
 var Boids = function(game){
   this.numBoids = 50;
   this.game = game;
   this.maxVelocity = 3;
   this.minSafeDistance = 25;
+  this.locality = 200;
   this.minY = 0;
   this.maxY = game.world.height;
   this.minX = 0;
@@ -43,21 +58,7 @@ var Boids = function(game){
 
   var _this = this;
 
-  this.distance = function(dX, dY) {
-    return Math.sqrt((dX * dX) + (dY * dY)) * 1.0;
-  };
-
-
-  this.distanceBetween = function(boidA, boidB) {
-    return this.distance(
-      boidA.position.x - boidB.position.x,
-      boidA.position.y - boidB.position.y
-      );
-  };
-
-  this.areBoidsTooClose = function(boid, otherBoid, safeDist) {
-    return this.distanceBetween(boid, otherBoid) < safeDist;
-  };
+  
 
   // adjusts the boid direction to follow the flock
   this.followFlock = function(boid) {
@@ -67,7 +68,7 @@ var Boids = function(game){
     // find average flock velocity
     this.forEach(function(item) {
       var otherBoid = item;
-      if (otherBoid.n !== boid.n) {
+      if (otherBoid.n !== boid.n && distanceBetween(item, boid) < _this.locality) {
         xVelocityFlock += otherBoid.xVelocity;
         yVelocityFlock += otherBoid.yVelocity;
       }
@@ -76,7 +77,7 @@ var Boids = function(game){
     xVelocityFlock = xVelocityFlock / this.numBoids;
     yVelocityFlock = yVelocityFlock / this.numBoids;
     
-    var dist = this.distance(
+    var dist = distance(
       this.position.x - xVelocityFlock, this.position.y - yVelocityFlock);
     if (dist === 0) {
       return;
@@ -96,7 +97,7 @@ var Boids = function(game){
     
     this.forEach(function(item) {
       var otherBoid = item;
-      if (otherBoid.n !== boid.n) {
+      if (otherBoid.n !== boid.n && distanceBetween(item, boid) < _this.locality) {
         xFromCenter += boid.position.x - otherBoid.position.x;
         yFromCenter += boid.position.y - otherBoid.position.y;
       }
@@ -105,7 +106,7 @@ var Boids = function(game){
     xFromCenter = xFromCenter / this.numBoids;
     yFromCenter = yFromCenter / this.numBoids;
     
-    var dist = this.distance(this.position.x - xFromCenter, this.position.y - yFromCenter);
+    var dist = distance(this.position.x - xFromCenter, this.position.y - yFromCenter);
     if (dist === 0) {
       return;
     }
@@ -120,9 +121,9 @@ var Boids = function(game){
 
     this.forEach(function(item) {
       var otherBoid = item;
-      if (otherBoid.n !== boid.n) {
+      if (otherBoid.n !== boid.n && distanceBetween(item, boid) < _this.locality) {
         
-        var isTooClose = _this.areBoidsTooClose(
+        var isTooClose = areBoidsTooClose(
           boid, otherBoid, _this.minSafeDistance);
         
         if (isTooClose) {
@@ -184,7 +185,7 @@ var Boids = function(game){
     
     // Is this boid too close to the player?
     var playerSafeDistance = this.minSafeDistance * 2;
-    var isTooClose = this.areBoidsTooClose(
+    var isTooClose = areBoidsTooClose(
                 boid, other, playerSafeDistance);
                 
     // If this boid is too close to the player, adjust this
@@ -222,10 +223,10 @@ var Boids = function(game){
     boid.yVelocity = Math.min(boid.yVelocity, this.maxVelocity);
   };
 
-  // This function is called once per animation for each boid.
-  // It runs all the simple rules that create flocking behavior
-  // and adjusts the position of the boid for the next step of
-  // the animation.
+  /**
+   * Main function that posiitons the boid in the world, invoking other
+   * boid methods
+   */
   this.positionBoid = function(boid) {
     this.followFlock(boid);
     this.aimAtCenterOfFlock(boid);

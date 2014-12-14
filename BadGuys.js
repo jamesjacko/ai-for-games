@@ -16,15 +16,24 @@ var BadGuy = function(game, texture, index){
   this.seekTimer = 0;
   this.health = 1;
 
+  // setup constant variables
+
+  //vision
   this.VISION_ANGLE = 60;
   this.VISION_LENGTH = 200;
   this.FIRE_RATE = 400;
+
+  // seek
   this.SEEK_TIME = 1000;
   this.SEEK_SPEED = 150;
+
+  // is ammended during seek
   this.visionMagnifier = 1;
 
+  // used to limit fir rate
   this.nextRound = 0;
   
+  // add drawing sprite to the world
   this.visionCone.addToWorld();
 
   this.heading = {
@@ -56,6 +65,7 @@ var BadGuy = function(game, texture, index){
   var _this = this;
   var _world = game.world;
 
+  // pick random rotation on initialisation
   this.rotation = Math.floor(Math.random() * 2*Math.PI );
 
   // update heading function, creates a new heading ahead of the npc 
@@ -64,14 +74,14 @@ var BadGuy = function(game, texture, index){
     var angle = 90;
     var distance = 200;
 
+    // current heading
     _this.currentHeading.x = _this.position.x + Math.cos(_this.rotation) * distance;
     _this.currentHeading.y = _this.position.y + Math.sin(_this.rotation) * distance;
     
+    // If NPC is dosile, we just randomly wander
     if(_this.state == "dosile"){
       
       var offsetAngle = (Math.floor(Math.random() * angle) -  angle/2) * (Math.PI / 180);
-
-      
 
       var coneX = _this.position.x + Math.cos(_this.rotation + offsetAngle) * distance;
       var coneY = _this.position.y + Math.sin(_this.rotation + offsetAngle) * distance;
@@ -105,6 +115,7 @@ var BadGuy = function(game, texture, index){
   }
   this.updateHeading();
 
+  // fills movement stack towards current heading (used in seek)
   this.fillMovementStack = function(number){
 
     this.movementStack = [];
@@ -130,6 +141,7 @@ var BadGuy = function(game, texture, index){
 
   this.inputEnabled = true;
 
+  // sets current state of the NPC
   this.setState = function(){
 
     this.visionMagnifier = (this.state == "alert" || this.state == "seek")? 2 : 1;
@@ -147,7 +159,7 @@ var BadGuy = function(game, texture, index){
       this.state = "seek";
     }
   }
-
+  // draws the vision cone.
   this.drawCone = function(){
     var angle = this.VISION_ANGLE * (Math.PI / 180);
     var coneX = this.position.x + Math.cos(this.rotation + angle) * this.VISION_LENGTH * this.visionMagnifier;

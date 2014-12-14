@@ -14,12 +14,13 @@ window.onload = function() {
     game.load.image('round', 'images/round.png');
     game.load.image('mine', 'images/mine.png');
     game.load.image('healthbar', 'images/healthbar.png');
+    game.load.image('follower', 'images/follower.png');
     game.time.advancedTiming = true;
 
   }
 
 
-  var FOLLOWER_AMNT = 0;
+  var FOLLOWER_AMNT = 1;
 
   var BAD_GUY_AMNT = 20;
   var map;
@@ -41,7 +42,7 @@ window.onload = function() {
 
     game.player = new Hero(game, 'goodGuy');
     game.player = game.add.existing(game.player);
-    game.followerGroup = new Followers(game, FOLLOWER_AMNT, 'car');
+    game.followerGroup = new Followers(game, FOLLOWER_AMNT, 'follower');
     game.badGuyGroup = new BadGuys(game, BAD_GUY_AMNT, 'badGuy');
     game.boids = new Boids(game);
 
