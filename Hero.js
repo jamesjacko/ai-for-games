@@ -64,7 +64,7 @@ Hero.prototype.update = function(){
       this.body.velocity.x = 0;
       this.body.velocity.y = 0;
       this.body.angularVelocity = 0;
-      this.healthBar.width = (this.health / 20) * 20;
+      this.healthBar.width = (this.health / 20) * 50;
       this.healthBar.position.x = this.position.x - this.width / 2;
       this.healthBar.position.y = this.position.y - this.height / 2 - 10;
       // slow the player down when on water

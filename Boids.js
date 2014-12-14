@@ -31,10 +31,10 @@ var distance = function(dX, dY) {
 };
 
 
-var distanceBetween = function(boidA, boidB) {
+var distanceBetween = function(A, B) {
   return distance(
-    boidA.position.x - boidB.position.x,
-    boidA.position.y - boidB.position.y
+    A.position.x - B.position.x,
+    A.position.y - B.position.y
     );
 };
 
