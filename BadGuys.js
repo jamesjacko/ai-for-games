@@ -201,7 +201,7 @@ var BadGuy = function(game, texture, index){
       this.rotation = Math.atan2(dy, dx);
     }
   }
-
+  // move towards last known player position
   this.seek = function(speed){
       var speedChng = this.onWater? speed/2: speed
       game.physics.arcade.moveToXY(this, this.heading.x, this.heading.y, speedChng);
@@ -210,7 +210,7 @@ var BadGuy = function(game, texture, index){
       var dy = this.heading.y - this.position.y;
       this.rotation = Math.atan2(dy, dx);
   }
-
+  // attack the player
   this.stopAndAttack = function(){
     this.body.velocity.x = 0;
     this.body.velocity.y = 0;
@@ -224,7 +224,7 @@ var BadGuy = function(game, texture, index){
       this.nextRound = this.game.time.now + this.FIRE_RATE;
     }
   }
-
+  // avoid other NPCS
   this.avoidOthers = function(){
     _this = this;
     this.parent.forEach(function(item){
@@ -273,7 +273,7 @@ BadGuy.prototype.update = function(){
     
 
     Phaser.Sprite.prototype.update.call(this);
-
+    // state machine
     switch(this.state){
       case "alert":
         this.stopAndAttack();

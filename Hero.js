@@ -1,3 +1,7 @@
+
+/*
+ Hero class, this is the player class
+ */
 var Hero = function(game, texture){
   this.game = game;
   this.texture = texture;
@@ -9,7 +13,7 @@ var Hero = function(game, texture){
 
   this.anchor.setTo(0.5, 0.5);
   this.health = 20;
-
+  // health bar shown above user
   this.healthBar = this.game.add.sprite(this.position.x - this.width / 2,this.position.y - this.height / 2 - 10,'healthbar');
   this.healthBar.cropEnabled = true;
   this.healthBar.anchor.setTo(0, 0);
@@ -30,7 +34,7 @@ var Hero = function(game, texture){
     mine = new Mine(game, 'mine', this, game.badGuyGroup);
     game.add.existing(mine);
   };
-
+  // ad callbacks to button presses space and m button
   this.cursors = game.input.keyboard.createCursorKeys();
   this.fireButton = game.input.keyboard.addKey(Phaser.Keyboard.SPACEBAR);
   this.mineButton = game.input.keyboard.addKey(Phaser.Keyboard.M);
@@ -63,7 +67,7 @@ Hero.prototype.update = function(){
       this.healthBar.width = (this.health / 20) * 20;
       this.healthBar.position.x = this.position.x - this.width / 2;
       this.healthBar.position.y = this.position.y - this.height / 2 - 10;
-
+      // slow the player down when on water
       var inc = (this.onWater)? 100: 200;
 
       if(this.cursors.left.isDown){

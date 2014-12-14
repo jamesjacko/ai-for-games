@@ -4,6 +4,9 @@ window.onload = function() {
   var counter = 0;
   game = new Phaser.Game(800, 600, Phaser.CANVAS, 'game', { preload: preload, create: create, update: update, render: render });
 
+  /**
+    preload the game, mainly for preloading images and the tilemap
+  */
   function preload() {
     game.load.tilemap('desert', createJSON(width, height) , null, Phaser.Tilemap.TILED_JSON);
     game.load.image('tiles', 'images/new_map.png');
@@ -39,7 +42,7 @@ window.onload = function() {
     layer = map.createLayer('Ground');
 
     layer.resizeWorld();
-
+    // initialize player and npc groups
     game.player = new Hero(game, 'goodGuy');
     game.player = game.add.existing(game.player);
     game.followerGroup = new Followers(game, FOLLOWER_AMNT, 'follower');
@@ -47,7 +50,7 @@ window.onload = function() {
     game.boids = new Boids(game);
 
     
-
+    // water and land collision detections
     map.setTileIndexCallback(1, collide, this, layer);
     map.setTileIndexCallback(2, collide, this, layer);
 
@@ -55,12 +58,13 @@ window.onload = function() {
 
   }
 
+  // set the object that has collided with water to be on water
   function collide(dude, layer){
     dude.setOnWater(layer.index == 2);
   }
 
   function update() {
-
+    // send user to survey on death
     if(game.player.health < 1){
       alert("You died");
       game.destroy();
@@ -69,7 +73,7 @@ window.onload = function() {
     
     game.physics.arcade.collide(game.followerGroup, game.followerGroup);
     game.physics.arcade.collide(game.badGuyGroup, game.badGuyGroup);
-    
+    // enable tilemap collision
     this.game.physics.arcade.collide(game.player, layer, collide);
     }
 
@@ -77,7 +81,7 @@ window.onload = function() {
 
   function render() {
 
-    
+    // screen text
     game.debug.text('Lives: ' + game.player.health, 32, 64, 'rgb(0,255,0)');
     game.debug.text('Kill Count: ' + game.killCount, 32, 32, 'rgb(0,255,0)');
 
