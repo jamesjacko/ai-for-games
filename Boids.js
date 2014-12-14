@@ -1,8 +1,4 @@
 function Boid(game, texture, index, vel){
-  
-
-
-// The number of birds ("boids") flying around the screen
 this.maxVelocity = vel;
 
 this.n = index;
@@ -34,7 +30,7 @@ Boid.prototype.update = function(){
 
 var Boids = function(game){
   this.numBoids = 50;
-
+  this.game = game;
   this.maxVelocity = 3;
   this.minSafeDistance = 25;
   this.minY = 0;
@@ -43,14 +39,10 @@ var Boids = function(game){
   this.maxX = game.world.width;
 
   this.followFlockTendency = 0.5;
-
   this.aimAtFlockCenterTendency = 0.3;
 
   var _this = this;
 
-  // Return the distance between two points (dX, dY, and dZ
-  // are the differences between x, y, and z coordinates of the
-  // two points).
   this.distance = function(dX, dY) {
     return Math.sqrt((dX * dX) + (dY * dY)) * 1.0;
   };
@@ -67,15 +59,12 @@ var Boids = function(game){
     return this.distanceBetween(boid, otherBoid) < safeDist;
   };
 
-  // This function is called once per animation for each boid.
-  // It makes the boid slightly adjust its direction to follow
-  // the same flight direction as the rest of the flock.
+  // adjusts the boid direction to follow the flock
   this.followFlock = function(boid) {
     var xVelocityFlock = 0;
     var yVelocityFlock = 0;
     
-    // Find the average x, y, and z velocity for all other
-    // boids in the flock.
+    // find average flock velocity
     this.forEach(function(item) {
       var otherBoid = item;
       if (otherBoid.n !== boid.n) {
@@ -87,28 +76,24 @@ var Boids = function(game){
     xVelocityFlock = xVelocityFlock / this.numBoids;
     yVelocityFlock = yVelocityFlock / this.numBoids;
     
-    // Compute the distance between this boid's speed and
-    // the rest of the flock's average speed...
     var dist = this.distance(
-      xVelocityFlock, yVelocityFlock);
+      this.position.x - xVelocityFlock, this.position.y - yVelocityFlock);
     if (dist === 0) {
       return;
     }
     
-    // ...and use that distance to adjust this boid's speed.
+    // use distance to change bood's speed
     boid.xVelocity += (xVelocityFlock / dist) * this.followFlockTendency;
     boid.yVelocity += (yVelocityFlock / dist) * this.followFlockTendency;
   };
 
-  // This function is called once per animation for each boid.
-  // It makes the boid slightly adjust its direction to head
-  // into the center of the flock.
+  /**
+   * Move toward center of the flock
+   */
   this.aimAtCenterOfFlock = function(boid) {
     var xFromCenter = 0;
     var yFromCenter = 0;
     
-    // Find the average position of the rest of the flock
-    // so this boid can move into the center.
     this.forEach(function(item) {
       var otherBoid = item;
       if (otherBoid.n !== boid.n) {
@@ -120,36 +105,26 @@ var Boids = function(game){
     xFromCenter = xFromCenter / this.numBoids;
     yFromCenter = yFromCenter / this.numBoids;
     
-    // Compute the distance between this boid's position and
-    // the center of the flock...
-    var dist = this.distance(xFromCenter, yFromCenter);
+    var dist = this.distance(this.position.x - xFromCenter, this.position.y - yFromCenter);
     if (dist === 0) {
       return;
     }
     
-    // ...and use that distance to adjust this boid's position.
     boid.xVelocity += (xFromCenter / dist) * -1 * this.aimAtFlockCenterTendency;
     boid.yVelocity += (yFromCenter / dist) * -1 * this.aimAtFlockCenterTendency;
   };
 
-  // This function is called once per animation for each boid.
-  // It makes the boid avoid running into other boids.
   this.avoidOtherBoids = function(boid) {
     var xAdjustment = 0;
     var yAdjustment = 0;
-    
-    // Check every other boid...
+
     this.forEach(function(item) {
       var otherBoid = item;
       if (otherBoid.n !== boid.n) {
         
-        // ...and make sure this boid isn't flying too
-        // close.
         var isTooClose = _this.areBoidsTooClose(
           boid, otherBoid, _this.minSafeDistance);
         
-        // If flying too close, adjust this boid's velocity
-        // so it'll fly away from the dangerous collision.
         if (isTooClose) {
           var dX = boid.position.x - otherBoid.position.x;
           var dY = boid.position.y - otherBoid.position.y;
@@ -176,20 +151,13 @@ var Boids = function(game){
       }
     });
     
-    // Finally, adjust this boid's velocity to avoid all
-    // possible collisions.
     var soften = this.minSafeDistance / this.numBoids * 2.0;
     boid.xVelocity -= xAdjustment / soften;
     boid.yVelocity -= yAdjustment / soften;
   };
 
 
-
-  // This function is called once per animation for each boid.
-  // It keeps the boid within the bounds of the picture.
   this.keepBoidWithinBounds = function(boid) {
-    // If this boid is outside the X coordinates of our image,
-    // make it fly the other direction so it'll come back.
     if (boid.position.x > this.maxX) {
       boid.position.x = this.maxX;
       boid.xVelocity = -1 * boid.xVelocity;
@@ -199,8 +167,6 @@ var Boids = function(game){
       boid.xVelocity = -1 * boid.xVelocity;
     }
     
-    // If this boid is outside the Y coordinates of our image,
-    // make it fly the other direction so it'll come back.
     if (boid.position.y > this.maxY) {
       boid.position.y = this.maxY;
       boid.yVelocity = -1 * boid.yVelocity;
@@ -212,22 +178,20 @@ var Boids = function(game){
     
   };
 
-  this.avoidPlayer = function(boid) {
-    
+  this.avoidOther = function(boid, other) {
     var xAdjustment = 0;
     var yAdjustment = 0;
     
     // Is this boid too close to the player?
     var playerSafeDistance = this.minSafeDistance * 2;
     var isTooClose = this.areBoidsTooClose(
-                boid, game.player, playerSafeDistance);
+                boid, other, playerSafeDistance);
                 
     // If this boid is too close to the player, adjust this
-    // boid's velocity so it'll fly away from the big dangerous
-    // rock.
+    // boid's velocity so it'll fly away from it.
     if (isTooClose) {
-        var dX = boid.x - game.player.position.x;
-        var dY = boid.y - game.player.position.y;
+        var dX = boid.x - other.position.x;
+        var dY = boid.y - other.position.y;
         var sqrtSafeDist = Math.sqrt(playerSafeDistance);
                 
         if (dX < 0) {
@@ -252,8 +216,7 @@ var Boids = function(game){
     boid.yVelocity -= yAdjustment / 1.2;
   };
 
-  // This function is called once per animation for each boid.
-  // It makes sure the boid isn't going too fast.
+  
   this.restrictVelocity = function(boid) {
     boid.xVelocity = Math.min(boid.xVelocity, this.maxVelocity);
     boid.yVelocity = Math.min(boid.yVelocity, this.maxVelocity);
@@ -267,7 +230,12 @@ var Boids = function(game){
     this.followFlock(boid);
     this.aimAtCenterOfFlock(boid);
     this.avoidOtherBoids(boid);
-    this.avoidPlayer(boid);
+    this.avoidOther(boid, this.game.player);
+    var _this = this;
+    this.game.badGuyGroup.forEach(function(guy){
+      _this.avoidOther(boid, guy);
+    })
+
     this.restrictVelocity(boid);
 
     
