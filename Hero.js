@@ -56,8 +56,10 @@ Hero.prototype.constructor = Hero;
  * Phaser will call any game objects update function on game.update
  */
 Hero.prototype.update = function(){
-      if(this.health < 1)
+      if(this.health < 1){
+        alert("You loose");
         window.location.reload();
+      }
       this.body.velocity.x = 0;
       this.body.velocity.y = 0;
       this.body.angularVelocity = 0;
