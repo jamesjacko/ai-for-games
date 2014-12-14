@@ -60,6 +60,9 @@ window.onload = function() {
   }
 
   function update() {
+
+    if(game.player.health < 1)
+      game.state.start(preload);
     
     game.physics.arcade.collide(game.followerGroup, game.followerGroup);
     game.physics.arcade.collide(game.badGuyGroup, game.badGuyGroup);
