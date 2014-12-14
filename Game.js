@@ -61,13 +61,17 @@ window.onload = function() {
 
   function update() {
 
-    if(game.player.health < 1)
-      game.state.start(preload);
+    if(game.player.health < 1){
+      alert("You died");
+      game.destroy();
+      window.open("https://www.surveymonkey.com/s/MYSC88K");
+    } else {
     
     game.physics.arcade.collide(game.followerGroup, game.followerGroup);
     game.physics.arcade.collide(game.badGuyGroup, game.badGuyGroup);
     
     this.game.physics.arcade.collide(game.player, layer, collide);
+    }
 
   }
 
